@@ -1,9 +1,8 @@
-use std::{
-    env, fs,
-    io::{self, Write},
-};
+use anyhow::Result;
+use run::{run_file, run_repl};
+use std::env;
 
-use anyhow::{Context, Result};
+mod run;
 
 fn main() -> Result<()> {
     let mut args = env::args().skip(1);
@@ -16,29 +15,4 @@ fn main() -> Result<()> {
         return Ok(());
     }
     run_file(&filename)
-}
-
-fn run_repl() -> Result<()> {
-    print_prompt()?;
-    let lines = io::stdin().lines();
-    for line in lines {
-        run(line?)?;
-        print_prompt()?;
-    }
-    Ok(())
-}
-
-fn print_prompt() -> Result<()> {
-    print!("> ");
-    io::stdout().flush().context("Error flushing stdout")
-}
-
-fn run_file(filename: &str) -> Result<()> {
-    let contents = fs::read_to_string(filename).context("Error opening lox file")?;
-    run(contents)
-}
-
-fn run(string: String) -> Result<()> {
-    println!("{string}");
-    Ok(())
 }
