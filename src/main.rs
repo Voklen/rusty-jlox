@@ -4,6 +4,7 @@ use std::env;
 
 mod errors;
 mod run;
+mod scanner;
 
 fn main() -> Result<()> {
     let mut args = env::args().skip(1);
