@@ -2,6 +2,7 @@ use anyhow::Result;
 use run::{run_file, run_repl};
 use std::env;
 
+mod errors;
 mod run;
 
 fn main() -> Result<()> {

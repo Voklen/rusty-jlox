@@ -4,11 +4,17 @@ use std::{
     io::{self, Write},
 };
 
+use crate::error;
+
 pub fn run_repl() -> Result<()> {
     print_prompt()?;
     let lines = io::stdin().lines();
     for line in lines {
-        run(line?)?;
+        let err = run(line?);
+        match err {
+            Ok(()) => {}
+            Err(err) => error!("{err}"),
+        }
         print_prompt()?;
     }
     Ok(())
