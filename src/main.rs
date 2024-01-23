@@ -1,20 +1,14 @@
 use anyhow::Result;
-use run::{run_file, run_repl};
-use std::env;
+use run::{get_passed_filename, run_file, run_repl};
 
 mod errors;
 mod run;
 mod scanner;
 
 fn main() -> Result<()> {
-    let mut args = env::args().skip(1);
-    let filename = match args.next() {
-        Some(filename) => filename,
-        None => return run_repl(),
-    };
-    if args.next().is_some() {
-        println!("Usage: rjlox <file>");
-        return Ok(());
+    if let Some(filename) = get_passed_filename() {
+        run_file(filename)
+    } else {
+        run_repl()
     }
-    run_file(&filename)
 }

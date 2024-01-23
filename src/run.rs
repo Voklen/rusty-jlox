@@ -1,11 +1,21 @@
+use crate::{error, scanner::scanner};
 use anyhow::{Context, Result};
 use std::{
-    fs,
+    env, fs,
     io::{self, Write},
+    process,
     str::Chars,
 };
 
-use crate::{error, scanner::scanner};
+pub fn get_passed_filename() -> Option<String> {
+    let mut args = env::args().skip(1);
+    let filename = args.next();
+    if args.next() != None {
+        println!("Usage: rjlox <file>");
+        process::exit(64);
+    };
+    filename
+}
 
 pub fn run_repl() -> Result<()> {
     print_prompt()?;
@@ -26,7 +36,7 @@ fn print_prompt() -> Result<()> {
     io::stdout().flush().context("Error flushing stdout")
 }
 
-pub fn run_file(filename: &str) -> Result<()> {
+pub fn run_file(filename: String) -> Result<()> {
     let contents = fs::read_to_string(filename).context("Error opening lox file")?;
     run(contents.chars())
 }
