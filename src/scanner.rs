@@ -37,6 +37,9 @@ enum TokenType {
     Less,
     LessEqual,
 
+    // Newline
+    Newline,
+
     // Literals
     Identifier,
     String,
@@ -66,12 +69,15 @@ enum TokenType {
 pub fn scanner(chars: Chars) -> Result<Vec<Token>> {
     let mut tokens = vec![];
     let mut peekable = chars.peekable();
+    let mut line = 1;
     loop {
-        let token = scan_token(&mut peekable);
+        let token = scan_token(&mut peekable, line);
         match token {
             Some(token) => {
-                if token.token_type == TokenType::EOF {
-                    break;
+                match token.token_type {
+                    TokenType::EOF => break,
+                    TokenType::Newline => line += 1,
+                    _ => {}
                 }
                 tokens.push(token)
             }
@@ -81,44 +87,59 @@ pub fn scanner(chars: Chars) -> Result<Vec<Token>> {
     Ok(tokens)
 }
 
-fn scan_token(chars: &mut Peekable<Chars>) -> Option<Token> {
+fn scan_token(chars: &mut Peekable<Chars>, line: usize) -> Option<Token> {
+    let token = |token_type, lexeme| add_token(token_type, lexeme, line);
+    let eq_token = |base_type, eq_type, base_lexeme, chars| {
+        add_eq_token(base_type, eq_type, base_lexeme, chars, line)
+    };
+
     let next_char = chars.next();
     let char = match next_char {
         Some(char) => char,
-        None => return Some(add_token(EOF, "")),
+        None => return Some(token(EOF, "")),
     };
+    let should_skip = match char {
+        ' ' => true,
+        '\r' => true,
+        '\t' => true,
+        _ => false,
+    };
+    if should_skip {
+        return None;
+    }
     use TokenType::*;
     let token = match char {
         // Single-character tokens
-        '(' => add_token(LeftParen, "("),
-        ')' => add_token(RightParen, ")"),
-        '{' => add_token(LeftBrace, "{"),
-        '}' => add_token(RightBrace, "}"),
-        ',' => add_token(Comma, ","),
-        '.' => add_token(Dot, "."),
-        '-' => add_token(Minus, "-"),
-        '+' => add_token(Plus, "+"),
-        ';' => add_token(Semicolon, ";"),
-        '*' => add_token(Star, "*"),
+        '(' => token(LeftParen, "("),
+        ')' => token(RightParen, ")"),
+        '{' => token(LeftBrace, "{"),
+        '}' => token(RightBrace, "}"),
+        ',' => token(Comma, ","),
+        '.' => token(Dot, "."),
+        '-' => token(Minus, "-"),
+        '+' => token(Plus, "+"),
+        ';' => token(Semicolon, ";"),
+        '*' => token(Star, "*"),
         // One or two character tokens
-        '!' => add_eq_token(Bang, BangEqual, "!", chars),
-        '=' => add_eq_token(Equal, EqualEqual, "=", chars),
-        '<' => add_eq_token(Less, LessEqual, "<", chars),
-        '>' => add_eq_token(Greater, GreaterEqual, ">", chars),
-        '/' => slash(chars)?,
+        '!' => eq_token(Bang, BangEqual, "!", chars),
+        '=' => eq_token(Equal, EqualEqual, "=", chars),
+        '<' => eq_token(Less, LessEqual, "<", chars),
+        '>' => eq_token(Greater, GreaterEqual, ">", chars),
+        '/' => slash(chars, line),
+        '\n' => token(Newline, "\n"),
         unexpected => {
-            error!("Unexpected character: {unexpected}");
+            error!("Unexpected character: {unexpected} on line {line}");
             return None;
         }
     };
     return Some(token);
 }
 
-fn add_token(token_type: TokenType, lexeme: &str) -> Token {
+fn add_token(token_type: TokenType, lexeme: &str, line: usize) -> Token {
     return Token {
         token_type,
         lexeme: lexeme.to_string(),
-        line: 1,
+        line,
     };
 }
 
@@ -127,21 +148,22 @@ fn add_eq_token(
     eq_type: TokenType,
     base_lexeme: &str,
     chars: &mut Peekable<Chars>,
+    line: usize,
 ) -> Token {
     if chars.peek() == Some(&'=') {
-        add_token(eq_type, &format!("={base_lexeme}"))
+        add_token(eq_type, &format!("={base_lexeme}"), line)
     } else {
-        add_token(base_type, base_lexeme)
+        add_token(base_type, base_lexeme, line)
     }
 }
 
-fn slash(chars: &mut Peekable<Chars>) -> Option<Token> {
+fn slash(chars: &mut Peekable<Chars>, line: usize) -> Token {
     if chars.peek() == Some(&'/') {
         while !reached_newline(chars) {}
-        return None;
+        return add_token(TokenType::Newline, "\n", line);
     };
-    let token = add_token(TokenType::Slash, "/");
-    Some(token)
+    let token = add_token(TokenType::Slash, "/", line);
+    token
 }
 
 fn reached_newline(chars: &mut Peekable<Chars>) -> bool {
