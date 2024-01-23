@@ -127,6 +127,7 @@ fn scan_token(chars: &mut Peekable<Chars>, line: usize) -> Option<Token> {
         '>' => eq_token(Greater, GreaterEqual, ">", chars),
         '/' => slash(chars, line),
         '\n' => token(Newline, "\n"),
+        '"' => string(chars, line)?,
         unexpected => {
             error!("Unexpected character: {unexpected} on line {line}");
             return None;
@@ -169,4 +170,19 @@ fn slash(chars: &mut Peekable<Chars>, line: usize) -> Token {
 fn reached_newline(chars: &mut Peekable<Chars>) -> bool {
     let next_char = chars.next();
     next_char == None || next_char == Some('\n')
+}
+
+fn string(chars: &mut Peekable<Chars>, line: usize) -> Option<Token> {
+    let mut extra_lines = 0;
+    let mut string_chars = vec![];
+    while let Some(char) = chars.next() {
+        match char {
+            '\n' => extra_lines += 1,
+            '"' => break,
+            char => string_chars.push(char),
+        }
+    }
+    let string: String = string_chars.into_iter().collect();
+    let token = add_token(TokenType::String, &string, line);
+    Some(token)
 }
