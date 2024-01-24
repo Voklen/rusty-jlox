@@ -1,10 +1,10 @@
+use crate::error;
+use anyhow::Result;
 use std::{iter::Peekable, str::Chars};
 
-use anyhow::Result;
+mod test;
 
-use crate::error;
-
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Token {
 	token_type: TokenType,
 	lexeme: String,
