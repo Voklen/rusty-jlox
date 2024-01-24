@@ -148,7 +148,8 @@ fn add_eq_token(
 	line: usize,
 ) -> Token {
 	if chars.peek() == Some(&'=') {
-		add_token(eq_type, &format!("={base_lexeme}"), line)
+		chars.next();
+		add_token(eq_type, &format!("{base_lexeme}="), line)
 	} else {
 		add_token(base_type, base_lexeme, line)
 	}

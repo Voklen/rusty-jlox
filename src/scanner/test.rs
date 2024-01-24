@@ -84,22 +84,12 @@ mod tests {
 			},
 			Token {
 				token_type: LessEqual,
-				lexeme: "=<".to_string(),
-				line: 3,
-			},
-			Token {
-				token_type: Equal,
-				lexeme: "=".to_string(),
+				lexeme: "<=".to_string(),
 				line: 3,
 			},
 			Token {
 				token_type: EqualEqual,
 				lexeme: "==".to_string(),
-				line: 3,
-			},
-			Token {
-				token_type: Equal,
-				lexeme: "=".to_string(),
 				line: 3,
 			},
 		];
