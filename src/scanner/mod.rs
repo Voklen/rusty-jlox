@@ -71,17 +71,13 @@ pub fn scanner(chars: Chars) -> Result<Vec<Token>> {
 	let mut peekable = chars.peekable();
 	let mut line = 1;
 	loop {
-		let token = scan_token(&mut peekable, line);
-		match token {
-			Some(token) => {
-				match token.token_type {
-					TokenType::EOF => break,
-					TokenType::Newline => line += 1,
-					_ => {}
-				}
-				tokens.push(token)
+		let token_result = scan_token(&mut peekable, line);
+		if let Some(token) = token_result {
+			match token.token_type {
+				TokenType::EOF => break,
+				TokenType::Newline => line += 1,
+				_ => tokens.push(token),
 			}
-			None => {}
 		}
 	}
 	Ok(tokens)

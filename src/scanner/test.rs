@@ -13,11 +13,6 @@ mod tests {
 		use TokenType::*;
 		let expected = [
 			Token {
-				token_type: Newline,
-				lexeme: "\n".to_string(),
-				line: 1,
-			},
-			Token {
 				token_type: LeftParen,
 				lexeme: "(".to_string(),
 				line: 2,
@@ -45,11 +40,6 @@ mod tests {
 			Token {
 				token_type: RightBrace,
 				lexeme: "}".to_string(),
-				line: 2,
-			},
-			Token {
-				token_type: Newline,
-				lexeme: "\n".to_string(),
 				line: 2,
 			},
 			Token {
@@ -110,11 +100,6 @@ mod tests {
 			Token {
 				token_type: Equal,
 				lexeme: "=".to_string(),
-				line: 3,
-			},
-			Token {
-				token_type: Newline,
-				lexeme: "\n".to_string(),
 				line: 3,
 			},
 		];
