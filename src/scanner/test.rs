@@ -105,4 +105,33 @@ mod tests {
 		];
 		assert_eq!(actual, expected);
 	}
+
+	#[test]
+	fn string_test() {
+		let string = "\
+		\"string\"
+		*
+		\"other string (with spaces)\"
+		";
+		let actual = scanner(string.chars()).unwrap();
+		use TokenType::*;
+		let expected = [
+			Token {
+				token_type: String,
+				lexeme: "string".to_string(),
+				line: 1,
+			},
+			Token {
+				token_type: Star,
+				lexeme: "*".to_string(),
+				line: 2,
+			},
+			Token {
+				token_type: String,
+				lexeme: "other string (with spaces)".to_string(),
+				line: 3,
+			},
+		];
+		assert_eq!(actual, expected);
+	}
 }
