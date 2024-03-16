@@ -43,7 +43,7 @@ enum TokenType {
 	// Literals
 	Identifier,
 	String,
-	Number,
+	Number(f64),
 
 	// Keywords
 	And,
@@ -123,8 +123,20 @@ fn scan_token(chars: &mut Peekable<Chars>, line: usize) -> Option<(Token, usize)
 		'<' => eq_token(Less, LessEqual, "<", chars),
 		'>' => eq_token(Greater, GreaterEqual, ">", chars),
 		'/' => slash(chars, line),
+		// Newline
 		'\n' => token(Newline, "\n"),
+		// Literals
 		'"' => return string(chars, line),
+		'0' => number(chars, line, '0'),
+		'1' => number(chars, line, '1'),
+		'2' => number(chars, line, '2'),
+		'3' => number(chars, line, '3'),
+		'4' => number(chars, line, '4'),
+		'5' => number(chars, line, '5'),
+		'6' => number(chars, line, '6'),
+		'7' => number(chars, line, '7'),
+		'8' => number(chars, line, '8'),
+		'9' => number(chars, line, '9'),
 		unexpected => {
 			error!("Unexpected character: {unexpected} on line {line}");
 			return None;
@@ -186,4 +198,19 @@ fn string(chars: &mut Peekable<Chars>, line: usize) -> Option<(Token, usize)> {
 	let string: String = string_chars.into_iter().collect();
 	let token = add_token(TokenType::String, &string, line);
 	Some((token, extra_lines))
+}
+
+fn number(chars: &mut Peekable<Chars<'_>>, line: usize, initial_char: char) -> Token {
+	let mut number_chars = vec![initial_char];
+	while let Some(char) = chars.peek() {
+		if char.is_ascii_digit() || char == &'.' {
+			number_chars.push(chars.next().unwrap());
+		} else {
+			break;
+		}
+	}
+	let string: String = number_chars.into_iter().collect();
+	let as_float: f64 = string.parse().unwrap(); // We just checked it was a valid number
+	let token = add_token(TokenType::Number(as_float), &string, line);
+	token
 }

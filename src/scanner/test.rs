@@ -155,4 +155,39 @@ and ends on another\"
 		];
 		assert_eq!(actual, expected);
 	}
+
+	#[test]
+	fn numbers_test() {
+		let string = "\
+		6
+		28
+		0.486
+		81.28
+		";
+		let actual = scanner(string.chars()).unwrap();
+		use TokenType::*;
+		let expected = [
+			Token {
+				token_type: Number(6.0),
+				lexeme: "6".to_string(),
+				line: 1,
+			},
+			Token {
+				token_type: Number(28.0),
+				lexeme: "28".to_string(),
+				line: 2,
+			},
+			Token {
+				token_type: Number(0.486),
+				lexeme: "0.486".to_string(),
+				line: 3,
+			},
+			Token {
+				token_type: Number(81.28),
+				lexeme: "81.28".to_string(),
+				line: 4,
+			},
+		];
+		assert_eq!(actual, expected);
+	}
 }
