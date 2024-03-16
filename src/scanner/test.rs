@@ -124,4 +124,35 @@ mod tests {
 		];
 		assert_eq!(actual, expected);
 	}
+
+	#[test]
+	fn multiline_string_test() {
+		let string = "\
+		\"this string
+starts on one line
+and ends on another\"
+		*
+		\"other string (with spaces)\"
+		";
+		let actual = scanner(string.chars()).unwrap();
+		use TokenType::*;
+		let expected = [
+			Token {
+				token_type: String,
+				lexeme: "this string\nstarts on one line\nand ends on another".to_string(),
+				line: 1,
+			},
+			Token {
+				token_type: Star,
+				lexeme: "*".to_string(),
+				line: 4,
+			},
+			Token {
+				token_type: String,
+				lexeme: "other string (with spaces)".to_string(),
+				line: 5,
+			},
+		];
+		assert_eq!(actual, expected);
+	}
 }

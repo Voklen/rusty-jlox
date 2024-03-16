@@ -72,18 +72,19 @@ pub fn scanner(chars: Chars) -> Result<Vec<Token>> {
 	let mut line = 1;
 	loop {
 		let token_result = scan_token(&mut peekable, line);
-		if let Some(token) = token_result {
+		if let Some((token, extra_lines)) = token_result {
 			match token.token_type {
 				TokenType::EOF => break,
 				TokenType::Newline => line += 1,
 				_ => tokens.push(token),
 			}
+			line += extra_lines;
 		}
 	}
 	Ok(tokens)
 }
 
-fn scan_token(chars: &mut Peekable<Chars>, line: usize) -> Option<Token> {
+fn scan_token(chars: &mut Peekable<Chars>, line: usize) -> Option<(Token, usize)> {
 	let token = |token_type, lexeme| add_token(token_type, lexeme, line);
 	let eq_token = |base_type, eq_type, base_lexeme, chars| {
 		add_eq_token(base_type, eq_type, base_lexeme, chars, line)
@@ -92,7 +93,7 @@ fn scan_token(chars: &mut Peekable<Chars>, line: usize) -> Option<Token> {
 	let next_char = chars.next();
 	let char = match next_char {
 		Some(char) => char,
-		None => return Some(token(EOF, "")),
+		None => return Some((token(EOF, ""), 0)),
 	};
 	let should_skip = match char {
 		' ' => true,
@@ -123,13 +124,13 @@ fn scan_token(chars: &mut Peekable<Chars>, line: usize) -> Option<Token> {
 		'>' => eq_token(Greater, GreaterEqual, ">", chars),
 		'/' => slash(chars, line),
 		'\n' => token(Newline, "\n"),
-		'"' => string(chars, line)?,
+		'"' => return string(chars, line),
 		unexpected => {
 			error!("Unexpected character: {unexpected} on line {line}");
 			return None;
 		}
 	};
-	return Some(token);
+	return Some((token, 0));
 }
 
 fn add_token(token_type: TokenType, lexeme: &str, line: usize) -> Token {
@@ -169,17 +170,20 @@ fn reached_newline(chars: &mut Peekable<Chars>) -> bool {
 	next_char == None || next_char == Some('\n')
 }
 
-fn string(chars: &mut Peekable<Chars>, line: usize) -> Option<Token> {
+fn string(chars: &mut Peekable<Chars>, line: usize) -> Option<(Token, usize)> {
 	let mut extra_lines = 0;
 	let mut string_chars = vec![];
 	while let Some(char) = chars.next() {
 		match char {
-			'\n' => extra_lines += 1,
+			'\n' => {
+				extra_lines += 1;
+				string_chars.push(char)
+			}
 			'"' => break,
 			char => string_chars.push(char),
 		}
 	}
 	let string: String = string_chars.into_iter().collect();
 	let token = add_token(TokenType::String, &string, line);
-	Some(token)
+	Some((token, extra_lines))
 }
