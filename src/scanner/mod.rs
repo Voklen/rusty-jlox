@@ -1,70 +1,10 @@
 use crate::error;
 use anyhow::Result;
 use std::{iter::Peekable, str::Chars};
+use structs::*;
 
+mod structs;
 mod test;
-
-#[derive(Debug, PartialEq)]
-pub struct Token {
-	token_type: TokenType,
-	lexeme: String,
-	line: usize,
-	// literal
-}
-
-#[derive(Debug, PartialEq)]
-enum TokenType {
-	// Single-character tokens
-	LeftParen,
-	RightParen,
-	LeftBrace,
-	RightBrace,
-	Comma,
-	Dot,
-	Minus,
-	Plus,
-	Semicolon,
-	Slash,
-	Star,
-
-	// One or two character tokens
-	Bang,
-	BangEqual,
-	Equal,
-	EqualEqual,
-	Greater,
-	GreaterEqual,
-	Less,
-	LessEqual,
-
-	// Newline
-	Newline,
-
-	// Literals
-	Identifier,
-	String,
-	Number(f64),
-
-	// Keywords
-	And,
-	Class,
-	Else,
-	False,
-	Fun,
-	For,
-	If,
-	Nil,
-	Or,
-	Print,
-	Return,
-	Super,
-	This,
-	True,
-	Var,
-	While,
-
-	EOF,
-}
 
 pub fn scanner(chars: Chars) -> Result<Vec<Token>> {
 	let mut tokens = vec![];
@@ -138,8 +78,12 @@ fn scan_token(chars: &mut Peekable<Chars>, line: usize) -> Option<(Token, usize)
 		'8' => number(chars, line, '8'),
 		'9' => number(chars, line, '9'),
 		unexpected => {
-			error!("Unexpected character: {unexpected} on line {line}");
-			return None;
+			if unexpected.is_alphabetic() {
+				identifier(chars, line, unexpected)
+			} else {
+				error!("Unexpected character: {unexpected} on line {line}");
+				return None;
+			}
 		}
 	};
 	return Some((token, 0));
@@ -204,7 +148,7 @@ fn number(chars: &mut Peekable<Chars<'_>>, line: usize, initial_char: char) -> T
 	let mut number_chars = vec![initial_char];
 	while let Some(char) = chars.peek() {
 		if char.is_ascii_digit() || char == &'.' {
-			number_chars.push(chars.next().unwrap());
+			number_chars.push(chars.next().unwrap()); // We've just peeked Some() so we know it's Some()
 		} else {
 			break;
 		}
@@ -212,5 +156,22 @@ fn number(chars: &mut Peekable<Chars<'_>>, line: usize, initial_char: char) -> T
 	let string: String = number_chars.into_iter().collect();
 	let as_float: f64 = string.parse().unwrap(); // We just checked it was a valid number
 	let token = add_token(TokenType::Number(as_float), &string, line);
+	token
+}
+
+fn identifier(chars: &mut Peekable<Chars<'_>>, line: usize, initial_char: char) -> Token {
+	let mut number_chars = vec![initial_char];
+	while let Some(char) = chars.peek() {
+		if !char.is_alphanumeric() {
+			break;
+		}
+		number_chars.push(chars.next().unwrap()); // We've just peeked Some() so we know it's Some()
+	}
+	let string: String = number_chars.into_iter().collect();
+	let token_type = match KEYWORDS_MAP.get(string.as_str()) {
+		Some(token_type) => (*token_type).clone(),
+		None => TokenType::Identifier(string.clone()),
+	};
+	let token = add_token(token_type, &string, line);
 	token
 }

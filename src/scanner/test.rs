@@ -190,4 +190,45 @@ and ends on another\"
 		];
 		assert_eq!(actual, expected);
 	}
+
+	#[test]
+	fn keywords_and_identifiers_test() {
+		let string = "\
+		for
+		hello
+		Да
+		hello
+		var
+		";
+		let actual = scanner(string.chars()).unwrap();
+		use TokenType::*;
+		let expected = [
+			Token {
+				token_type: For,
+				lexeme: "for".to_string(),
+				line: 1,
+			},
+			Token {
+				token_type: Identifier("hello".to_string()),
+				lexeme: "hello".to_string(),
+				line: 2,
+			},
+			Token {
+				token_type: Identifier("Да".to_string()),
+				lexeme: "Да".to_string(),
+				line: 3,
+			},
+			Token {
+				token_type: Identifier("hello".to_string()),
+				lexeme: "hello".to_string(),
+				line: 4,
+			},
+			Token {
+				token_type: Var,
+				lexeme: "var".to_string(),
+				line: 5,
+			},
+		];
+		assert_eq!(actual, expected);
+	}
 }
