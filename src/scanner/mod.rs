@@ -3,7 +3,7 @@ use anyhow::Result;
 use std::{iter::Peekable, str::Chars};
 use structs::*;
 
-mod structs;
+pub mod structs;
 mod test;
 
 pub fn scanner(chars: Chars) -> Result<Vec<Token>> {

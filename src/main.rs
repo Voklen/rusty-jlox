@@ -2,6 +2,7 @@ use anyhow::Result;
 use run::{get_passed_filename, run_file, run_repl};
 
 mod errors;
+mod parser;
 mod run;
 mod scanner;
 
