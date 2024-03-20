@@ -4,24 +4,16 @@ use crate::scanner::structs::Token;
 
 pub enum Expr {
 	Literal(Literal),
-	Unary(Box<Unary>),
-	Binary(Box<Binary>),
-	Grouping(Box<Grouping>),
-}
-
-pub struct Unary {
-	pub operator: Token,
-	pub right: Expr,
-}
-
-pub struct Binary {
-	pub left: Expr,
-	pub operator: Token,
-	pub right: Expr,
-}
-
-pub struct Grouping {
-	pub expression: Expr,
+	Unary {
+		operator: Token,
+		right: Box<Expr>,
+	},
+	Binary {
+		left: Box<Expr>,
+		operator: Token,
+		right: Box<Expr>,
+	},
+	Grouping(Box<Expr>),
 }
 
 pub enum Literal {
@@ -32,11 +24,15 @@ impl fmt::Display for Expr {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Expr::Literal(expr) => write!(f, "{}", expr),
-			Expr::Unary(expr) => write!(f, "({} {})", expr.operator.lexeme, expr.right),
-			Expr::Binary(expr) => {
-				write!(f, "({} {} {})", expr.operator.lexeme, expr.left, expr.right)
+			Expr::Unary { operator, right } => write!(f, "({} {})", operator.lexeme, right),
+			Expr::Binary {
+				left,
+				operator,
+				right,
+			} => {
+				write!(f, "({} {} {})", operator.lexeme, left, right)
 			}
-			Expr::Grouping(expr) => write!(f, "(group {})", expr.expression),
+			Expr::Grouping(expr) => write!(f, "(group {})", expr),
 		}
 	}
 }
