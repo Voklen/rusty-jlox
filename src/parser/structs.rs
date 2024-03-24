@@ -3,7 +3,7 @@ use std::fmt;
 use crate::scanner::structs::Token;
 
 pub enum Expr {
-	Literal(Literal),
+	Literal(LiteralStruct),
 	Unary {
 		operator: Token,
 		right: Box<Expr>,
@@ -16,8 +16,8 @@ pub enum Expr {
 	Grouping(Box<Expr>),
 }
 
-pub enum Literal {
-	Number(i64),
+pub enum LiteralStruct {
+	Number(f64),
 }
 
 impl fmt::Display for Expr {
@@ -37,10 +37,10 @@ impl fmt::Display for Expr {
 	}
 }
 
-impl fmt::Display for Literal {
+impl fmt::Display for LiteralStruct {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
-			Literal::Number(num) => write!(f, "{}", num),
+			Self::Number(num) => write!(f, "{}", num),
 		}
 	}
 }
